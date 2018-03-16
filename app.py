@@ -12,7 +12,7 @@ football_teams = [
     'Name': 'FC Barcelona',
     'Country': 'Spain',
     'Stadium': 'Camp Nou',
-    'Attendance': 99354,
+    'Attendance': '99354',
     'Captain': 'Andres Iniesta'
   },
   {
@@ -20,7 +20,7 @@ football_teams = [
     'Name': 'Real Madrid CF',
     'Country': 'Spain',
     'Stadium': 'Estadio Santiago Bernabeu',
-    'Attendance': 81044,
+    'Attendance': '81044',
     'Captain': 'Sergio Ramos'
   },
   {
@@ -28,7 +28,7 @@ football_teams = [
     'Name': 'Club Atletico de Madrid',
     'Country': 'Spain',
     'Stadium': 'Wanda Metropolitano',
-    'Attendance': 67703,
+    'Attendance': '67703',
     'Captain': 'Gabi'
   },
   {
@@ -36,7 +36,7 @@ football_teams = [
     'Name': 'FC Bayern Muchen',
     'Country': 'Germany',
     'Stadium': 'Allianz Arena',
-    'Attendance': 75000,
+    'Attendance': '75000',
     'Captain': 'Manuel Neuer'
   },
   {
@@ -44,7 +44,7 @@ football_teams = [
     'Name': 'Juventus',
     'Country': 'Italy',
     'Stadium': 'Allianz Stadium',
-    'Attendance': 41507,
+    'Attendance': '41507',
     'Captain': 'Gianluigi Buffon'
   }
 ]
@@ -106,7 +106,7 @@ def change_info(team_id):
     item[0]['Stadium'] = request.json.get('Stadium', item[0]['Stadium'])
     item[0]['Attendance'] = request.json.get('Attendance', item[0]['Attendance'])
     item[0]['Captain'] = request.json.get('Captain', item[0]['Captain'])
-    return jsonify(item[0]), 200
+    return jsonify(item[0])
 
 # Delete teams
 @app.route('/football_teams/<int:team_id>', methods=['DELETE'])
