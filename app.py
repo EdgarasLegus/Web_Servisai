@@ -64,7 +64,9 @@ def get_football_teams():
 		for i in football_teams:
 			if( re.search(request.args.get('name', ''), i["Name"], re.IGNORECASE)):
 				findTeams.append(i)
-	return jsonify(findTeams)
+		return jsonify(findTeams)
+	else:
+		return jsonify(football_teams), 200
 
 # Get method to show team by id
 @app.route('/football_teams/<int:team_id>', methods=['GET'])
