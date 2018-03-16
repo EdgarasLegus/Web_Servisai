@@ -106,7 +106,7 @@ def change_info(team_id):
     item[0]['Stadium'] = request.json.get('Stadium', item[0]['Stadium'])
     item[0]['Attendance'] = request.json.get('Attendance', item[0]['Attendance'])
     item[0]['Captain'] = request.json.get('Captain', item[0]['Captain'])
-    return jsonify(item[0])
+    return jsonify(item[0]), 200
 
 # Delete teams
 @app.route('/football_teams/<int:team_id>', methods=['DELETE'])
@@ -115,7 +115,7 @@ def delete_team(team_id):
   if len(item) == 0:
     abort(404)
   football_teams.remove(item[0])
-  return jsonify(True)
+  return jsonify(True), 200
 
 @app.errorhandler(404)
 def not_found(error):
