@@ -58,13 +58,13 @@ def hello():
 # Showing info about teams
 @app.route('/football_teams', methods=['GET'])
 def get_football_teams():
-	return jsonify({'football_teams': football_teams})
+	return jsonify(football_teams)
 
 # Get method to show team by id
 @app.route('/football_teams/<int:team_id>', methods=['GET'])
 def get_team(team_id):
   team = [tm for tm in football_teams if (tm['ID'] == team_id) ]
-  return jsonify({'current team':team})
+  return jsonify(team)
 
 # Create a new team
 @app.route('/football_teams', methods=['POST'])
@@ -81,7 +81,7 @@ def create_team():
 
 	}
 	football_teams.append(item)
-	return jsonify({'new team': item}), 201
+	return jsonify(item), 201
 
 # Change team attributes
 @app.route('/football_teams/<int:team_id>', methods=['PUT'])
@@ -106,7 +106,7 @@ def change_info(team_id):
     item[0]['Stadium'] = request.json.get('Stadium', item[0]['Stadium'])
     item[0]['Attendance'] = request.json.get('Attendance', item[0]['Attendance'])
     item[0]['Captain'] = request.json.get('Captain', item[0]['Captain'])
-    return jsonify({'changed team': item[0]})
+    return jsonify(item[0])
 
 # Delete teams
 @app.route('/football_teams/<int:team_id>', methods=['DELETE'])
@@ -115,7 +115,7 @@ def delete_team(team_id):
   if len(item) == 0:
     abort(404)
   football_teams.remove(item[0])
-  return jsonify({'team deleted': True})
+  return jsonify(True)
 
 @app.errorhandler(404)
 def not_found(error):
