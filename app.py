@@ -2,6 +2,7 @@ from flask import Flask, jsonify, abort, request
 from redis import Redis
 from flask import make_response
 import os
+import re
 
 app = Flask(__name__)
 redis = Redis(host='redis',port=6379)
@@ -58,7 +59,12 @@ def hello():
 # Showing info about teams
 @app.route('/football_teams', methods=['GET'])
 def get_football_teams():
-	return jsonify(football_teams)
+	if( request.args.get('name', '')):
+		findTeams = []
+		for i in football_teams:
+			if( re.search(request.args.get('name', ''), i["Name"], re.IGNORECASE)):
+				findTeams.append(i)
+	return jsonify(findTeams)
 
 # Get method to show team by id
 @app.route('/football_teams/<int:team_id>', methods=['GET'])
@@ -81,7 +87,7 @@ def create_team():
 
 	}
 	football_teams.append(item)
-	return jsonify(item), 201
+	return jsonify(item), 201, {'Location': '/football_teams/'+str(football_teams[-1]['ID'])}
 
 # Change team attributes
 @app.route('/football_teams/<int:team_id>', methods=['PUT'])
