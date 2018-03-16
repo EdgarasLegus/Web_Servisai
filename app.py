@@ -106,7 +106,7 @@ def change_info(team_id):
     item[0]['Stadium'] = request.json.get('Stadium', item[0]['Stadium'])
     item[0]['Attendance'] = request.json.get('Attendance', item[0]['Attendance'])
     item[0]['Captain'] = request.json.get('Captain', item[0]['Captain'])
-    return jsonify(item[0])
+    return jsonify(item[0]), 200
 
 # Delete teams
 @app.route('/football_teams/<int:team_id>', methods=['DELETE'])
