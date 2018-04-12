@@ -1,11 +1,12 @@
 from flask import Flask, jsonify, abort, request
-from redis import Redis
+#from redis import Redis
 from flask import make_response
 import os
 import re
+import requests
 
 app = Flask(__name__)
-redis = Redis(host='redis',port=6379)
+#redis = Redis(host='redis',port=6379)
 
 football_teams = [
   {
@@ -14,7 +15,8 @@ football_teams = [
     'Country': 'Spain',
     'Stadium': 'Camp Nou',
     'Attendance': '99354',
-    'Captain': 'Andres Iniesta'
+    'Captain': 'Andres Iniesta',
+    'dogs_db': []
   },
   {
     'ID': 2,
@@ -22,7 +24,8 @@ football_teams = [
     'Country': 'Spain',
     'Stadium': 'Estadio Santiago Bernabeu',
     'Attendance': '81044',
-    'Captain': 'Sergio Ramos'
+    'Captain': 'Sergio Ramos',
+    'dogs_db': []
   },
   {
     'ID': 3,
@@ -30,7 +33,8 @@ football_teams = [
     'Country': 'Spain',
     'Stadium': 'Wanda Metropolitano',
     'Attendance': '67703',
-    'Captain': 'Gabi'
+    'Captain': 'Gabi',
+    'dogs_db': []
   },
   {
     'ID': 4,
@@ -38,7 +42,8 @@ football_teams = [
     'Country': 'Germany',
     'Stadium': 'Allianz Arena',
     'Attendance': '75000',
-    'Captain': 'Manuel Neuer'
+    'Captain': 'Manuel Neuer',
+    'dogs_db': []
   },
   {
     'ID': 5,
@@ -46,15 +51,16 @@ football_teams = [
     'Country': 'Italy',
     'Stadium': 'Allianz Stadium',
     'Attendance': '41507',
-    'Captain': 'Gianluigi Buffon'
+    'Captain': 'Gianluigi Buffon',
+    'dogs_db': []
   }
 ]
 
 # Introduction
 @app.route('/')
 def hello():
-	redis.incr('counter')
-	return 'Hi! Here we provide info about football. You have been here %s time(s).' %redis.get('counter')
+#	redis.incr('counter')
+	return 'Hi! Here we provide info about football. You have been here %s time(s).' #%redis.get('counter')
 
 # Showing info about teams
 @app.route('/football_teams', methods=['GET'])
@@ -129,5 +135,12 @@ def delete_team(team_id):
 def not_found(error):
 	return make_response(jsonify({'error': 'Not Found'}), 404)
 
+#Access info about dogs
+@app.route('/dogs', methods=['GET'])
+def get_dogs():
+	r = requests.get('http://172.18.0.1:81/dogs')
+	data = r.json()
+	return jsonify(data)
+
 if __name__== "__main__":
-	app.run(host="0.0.0.0",debug=True)
+	app.run(host="0.0.0.0",debug=True, threaded=True)
