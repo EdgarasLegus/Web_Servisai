@@ -194,35 +194,37 @@ def create_dog():
 	return jsonify(new_team), 201
 
 #Change info about dog
-@app.route('/football_teams/<int:team_id>/dogs', methods=['PUT'])
-def change_dog(team_id):
-	fteam = [tm for tm in football_teams if (tm['ID'] == team_id)]
-	if len(fteam) == 0:
-		abort(404)
-	link = 'http://web2:81/dogs'
-	change_doggy = {
-		'breed': request.json['breed'],
-		'name': request.json['name'],
-		'temporary guardian ID': request.json.get('temporary guardian ID', "Michael")
-	}
-
-	req = requests.put(link, json=change_doggy)
-	data = req.json()
-	return jsonify(data), 200
+#@app.route('/football_teams/<int:team_id>/dogs', methods=['PUT'])
+#def change_dog(team_id):
+#	fteam = [tm for tm in football_teams if (tm['ID'] == team_id)]
+#	if len(fteam) == 0:
+#		abort(404)
+#	link = 'http://web2:81/dogs'
+#	change_doggy = {
+#		'breed': request.json['breed'],
+#		'id': request.json.get('id' , 'unknown'),
+#		'name': request.json['name'],
+#		'temporary guardian ID': request.json.get('temporary guardian ID', "Michael")
+#	}
+#
+#	req = requests.put(link, json=change_doggy)
+#	req = req.text
+#	req = json.loads(req)
+#	return jsonify(req), 200
 
 # Delete dog
-@app.route('/football_teams/<int:team_id>/dogs/<int:dog_id>', methods=['DELETE'])
-def delete_dog(team_id, dog_id):
-	fteam = [ tm for tm in football_teams if (tm['ID'] == team_id)]
-	if len(fteam) == 0 or len(fteam[0]['dogs']) == 0:
-		abort(404)
-	link = 'http://web2:81/dogs'
-	for i in range(len(fteam[0]['dogs'])):
-		if fteam[0]['dogs'][i]['ID'] == dog_id:
-			req = requests.delete('{}/{}'.format(link, dog_id))
-			fteam[0]['dogs'].remove(fteam[0]['dogs'][i])
-			return jsonify(True), 200
-	return jsonify(False), 404
+#@app.route('/football_teams/<int:team_id>/dogs/<dog_id>', methods=['DELETE'])
+#def delete_dog(team_id, dog_id):
+#	tam = [ tm for tm in football_teams if (tm['ID'] == team_id)]
+#	if len(tam) == 0 or len(tam[0]['dogs']) == 0:
+#		abort(404)
+#	link = 'http://web2:81/dogs'
+#	for i in range(len(tam[0]['dogs'])):
+#		if tam[0]['dogs'][i] == dog_id:
+#			req = requests.delete('{}/{}'.format(link, dog_id))
+#			tam[0]['dogs'].remove(tam[0]['dogs'][i])
+#			return jsonify(True), 200
+#	return jsonify(False), 404
 
 if __name__== "__main__":
 	app.run(host="0.0.0.0",debug=True, port=5000)
