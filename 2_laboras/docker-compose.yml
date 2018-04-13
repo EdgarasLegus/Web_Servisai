@@ -1,6 +1,14 @@
 version: '2'
 
 services:
+  web2:
+    build: ./another_WS
+    command: python ./another_WS/dog_shelter.py runserver 0.0.0.0:81
+    ports:
+      - "81:5000"
+    volumes:
+      - .:/code
+
   web:
     build: .
     command: python app.py
@@ -8,13 +16,5 @@ services:
       - "80:5000"
     volumes:
       - .:/code
-
-  web2:
-    build: ./another_WS
-    command: python ./another_WS/dog_shelter.py
-    ports:
-      - "81:5000"
-    depends_on:
-      - web
-    volumes:
-      - .:/code
+    links:
+      - web2
