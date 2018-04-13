@@ -101,7 +101,8 @@ def create_team():
 	  'Country': request.json.get('Country', ""),
 	  'Stadium': request.json.get('Stadium', "Unknown"),
 	  'Attendance': request.json.get('Attendance', "10000"),
-	  'Captain': request.json.get('Captain', "Player")
+	  'Captain': request.json.get('Captain', "Player"),
+	  'Spot': request.json['Spot']
 
 	}
 	football_teams.append(item)
@@ -173,7 +174,6 @@ def get_dog_for_team(team_id):
 @app.route('/football_teams/dogs', methods=['POST'])
 def create_dog():
 	link = 'http://172.18.0.1:81/dogs'
-	lastID = int(football_teams[len(football_teams) - 1]['ID']) + 1
 	new_doggy = {
 			'breed': request.json['breed'],
 			'name': request.json['name'],
@@ -182,16 +182,47 @@ def create_dog():
 	req = requests.post(link, json=new_doggy)
 	req = json.loads(req.text)
 	new_team = {
-			'ID': str(lastID),
+			'ID': football_teams[-1]['ID'] + 1,
 			'Name': request.json['Name'],
 			'Country': request.json['Country'],
 			'Stadium': request.json.get('Stadium', 'Unknown'),
 			'Attendance': request.json.get('Attendance', '10000'),
 			'Captain': request.json.get('Captain', 'Best player'),
-			'Spot' : req['ID']
+			'Spot' : request.json['Spot']
 	}
 	football_teams.append(new_team)
-	return jsonify(new_team, req), 201
+	return jsonify(new_team), 201
+
+#Change info about dog
+@app.route('/football_teams/<int:team_id>/dogs', methods=['PUT'])
+def change_dog(team_id):
+	fteam = [tm for tm in football_teams if (tm['ID'] == team_id)]
+	if len(fteam) == 0:
+		abort(404)
+	link = 'http://172.18.0.1:81/dogs'+fteam[0]['Spot']
+	change_doggy = {
+		'breed': request.json['breed'],
+		'name': request.json['name'],
+		'temporary guardian ID': request.json.get('temporary guardian ID', 'Michael')
+	}
+
+	req = requests.put(link, json=change_doggy)
+	data = req.json()
+	return jsonify(data), 200
+
+# Delete dog
+@app.route('/football_teams/<int:team_id>/dogs/<int:dog_id>', methods=['DELETE'])
+def delete_dog(team_id, dog_id):
+	fteam = [ tm for tm in football_teams if (tm['ID'] == team_id)]
+	if len(fteam) == 0 or len(fteam[0]['dogs']) == 0:
+		abort(404)
+	link = 'http://172.18.0.1:81/dogs'
+	for i in range(len(fteam[0]['dogs'])):
+		if fteam[0]['dogs'][i]['ID'] == dog_id:
+			req = requests.delete('{}/{}'.format(link, dog_id))
+			fteam[0]['dogs'].remove(fteam[0]['dogs'][i])
+			return jsonify(True), 200
+	return jsonify(False), 404
 
 if __name__== "__main__":
 	app.run(host="0.0.0.0",debug=True, threaded=True)
