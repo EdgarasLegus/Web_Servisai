@@ -3,6 +3,7 @@ from flask import Flask, jsonify, abort, request
 from flask import make_response
 import os
 import re
+import json
 import requests
 
 app = Flask(__name__)
@@ -16,7 +17,7 @@ football_teams = [
     'Stadium': 'Camp Nou',
     'Attendance': '99354',
     'Captain': 'Andres Iniesta',
-    'dogs_db': []
+    'Spot': '1'
   },
   {
     'ID': 2,
@@ -25,7 +26,7 @@ football_teams = [
     'Stadium': 'Estadio Santiago Bernabeu',
     'Attendance': '81044',
     'Captain': 'Sergio Ramos',
-    'dogs_db': []
+    'Spot': '2'
   },
   {
     'ID': 3,
@@ -34,7 +35,7 @@ football_teams = [
     'Stadium': 'Wanda Metropolitano',
     'Attendance': '67703',
     'Captain': 'Gabi',
-    'dogs_db': []
+    'Spot': '3'
   },
   {
     'ID': 4,
@@ -43,7 +44,7 @@ football_teams = [
     'Stadium': 'Allianz Arena',
     'Attendance': '75000',
     'Captain': 'Manuel Neuer',
-    'dogs_db': []
+    'Spot': '4'
   },
   {
     'ID': 5,
@@ -52,7 +53,16 @@ football_teams = [
     'Stadium': 'Allianz Stadium',
     'Attendance': '41507',
     'Captain': 'Gianluigi Buffon',
-    'dogs_db': []
+    'Spot': '5'
+  },
+  {
+    'ID':6,
+    'Name': 'Roma',
+    'Country': 'Italy',
+    'Stadium': 'Stadio Olimpico',
+    'Attendance': '51666',
+    'Captain': 'Daniele De Rossi',
+    'Spot': '6'
   }
 ]
 
@@ -135,12 +145,53 @@ def delete_team(team_id):
 def not_found(error):
 	return make_response(jsonify({'error': 'Not Found'}), 404)
 
+####################SECOND TASK##################################
+
 #Access info about dogs
 @app.route('/dogs', methods=['GET'])
 def get_dogs():
-	r = requests.get('http://172.18.0.1:81/dogs')
-	data = r.json()
+	req = requests.get('http://172.18.0.1:81/dogs')
+	data = req.json()
 	return jsonify(data)
+
+#Get dogs for each team
+@app.route('/football_teams/<int:team_id>/dogs', methods=['GET'])
+def get_dog_for_team(team_id):
+	fteam = [tm for tm in football_teams if (tm['ID'] == team_id)]
+	if len(fteam) == 0:
+		abort(404)
+	link = 'http://172.18.0.1:81/dogs'
+	req = requests.get('{}/{}'.format(link, fteam[0]['ID']))
+	data = req.json()
+	if req.status_code == 200:
+		fteam[0]['dog'] = []
+		fteam[0]['dog'].append(data)
+		return jsonify(fteam[0])
+	return jsonify(data)
+
+#Create new dog for the team
+@app.route('/football_teams/dogs', methods=['POST'])
+def create_dog():
+	link = 'http://172.18.0.1:81/dogs'
+	lastID = int(football_teams[len(football_teams) - 1]['ID']) + 1
+	new_doggy = {
+			'breed': request.json['breed'],
+			'name': request.json['name'],
+			'temporary guardian ID': request.json['temporary guardian ID']
+	}
+	req = requests.post(link, json=new_doggy)
+	req = json.loads(req.text)
+	new_team = {
+			'ID': str(lastID),
+			'Name': request.json['Name'],
+			'Country': request.json['Country'],
+			'Stadium': request.json.get('Stadium', 'Unknown'),
+			'Attendance': request.json.get('Attendance', '10000'),
+			'Captain': request.json.get('Captain', 'Best player'),
+			'Spot' : req['ID']
+	}
+	football_teams.append(new_team)
+	return jsonify(new_team, req), 201
 
 if __name__== "__main__":
 	app.run(host="0.0.0.0",debug=True, threaded=True)
