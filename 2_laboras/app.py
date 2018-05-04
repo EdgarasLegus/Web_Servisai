@@ -63,7 +63,7 @@ football_teams = [
     'Stadium': 'Stadio Olimpico',
     'Attendance': '51666',
     'Captain': 'Daniele De Rossi',
-    'Dog_ID': '1'
+    'Doggy': '1'
   }
 ]
 
