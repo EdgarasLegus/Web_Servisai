@@ -18,7 +18,7 @@ football_teams = [
     'Stadium': 'Camp Nou',
     'Attendance': '99354',
     'Captain': 'Andres Iniesta',
-    'Dog_ID': '1'
+    'Doggy': '1'
   },
   {
     'ID': '2',
@@ -27,7 +27,7 @@ football_teams = [
     'Stadium': 'Estadio Santiago Bernabeu',
     'Attendance': '81044',
     'Captain': 'Sergio Ramos',
-    'Dog_ID': '1'
+    'Doggy': '1'
   },
   {
     'ID': '3',
@@ -36,7 +36,7 @@ football_teams = [
     'Stadium': 'Wanda Metropolitano',
     'Attendance': '67703',
     'Captain': 'Gabi',
-    'Dog_ID': '1'
+    'Doggy': '1'
   },
   {
     'ID': '4',
@@ -45,7 +45,7 @@ football_teams = [
     'Stadium': 'Allianz Arena',
     'Attendance': '75000',
     'Captain': 'Manuel Neuer',
-    'Dog_ID': '1'
+    'Doggy': '1'
   },
   {
     'ID': '5',
@@ -54,7 +54,7 @@ football_teams = [
     'Stadium': 'Allianz Stadium',
     'Attendance': '41507',
     'Captain': 'Gianluigi Buffon',
-    'Dog_ID': '1'
+    'Doggy': '1'
   },
   {
     'ID': '6',
@@ -86,11 +86,11 @@ def get_football_teams():
 		embTeams=copy.deepcopy(football_teams)
 		for i in range(0, len(football_teams)):
 			try:
-				req = requests.get('http://web2:81/dogs/'+embTeams[int(i)]['Dog_ID'])
+				req = requests.get('http://web2:81/dogs/'+embTeams[int(i)]['Doggy'])
 				req = json.loads(req.text)
-				embTeams[int(i)]['Dog_ID'] = req
+				embTeams[int(i)]['Doggy'] = req
 			except requests.exceptions.RequestException as e:
-				embTeams[int(i)]['Dog_ID'] = "null"
+				embTeams[int(i)]['Doggy'] = "null"
 		return jsonify(embTeams), 200
 	else:
 		return jsonify(football_teams), 200
@@ -101,11 +101,11 @@ def get_team(team_id):
 	if( request.args.get('embedded', '') == "dog"):
 		embTeams=copy.deepcopy(football_teams)
 		try:
-			req = requests.get('http://web2:81/dogs/'+embTeams[int(team_id)]['Dog_ID'])
+			req = requests.get('http://web2:81/dogs/'+embTeams[int(team_id)]['Doggy'])
 			req = json.loads(req.text)
-			embTeams[int(team_id)]['Dog_ID'] = req
+			embTeams[int(team_id)]['Doggy'] = req
 		except requests.exceptions.RequestException as e:
-			embTeams[int(team_id)]['Dog_ID'] = "null"
+			embTeams[int(team_id)]['Doggy'] = "null"
 		return jsonify(embTeams[int(team_id)]), 200
 	else:
   		team = [tm for tm in football_teams if (tm['ID'] == team_id) ]
@@ -126,13 +126,13 @@ def create_team():
 	  		'Stadium': request.json.get('Stadium', "Unknown"),
 	  		'Attendance': request.json.get('Attendance', "10000"),
 	  		'Captain': request.json.get('Captain', "Player"),
-	  		'Dog_ID': req['id']
+	  		'Doggy': req['id']
 		}
 		football_teams.append(item)
 		return jsonify(item), 201
 	else:
 		team_nr = len(football_teams)+1
-		req = requests.get('http://web2:81/dogs/'+request.json['Dog_ID'])
+		req = requests.get('http://web2:81/dogs/'+request.json['Doggy'])
 		if not request.json or not 'Name' in request.json:
 			abort(404)
 		else:
@@ -143,7 +143,7 @@ def create_team():
 				'Stadium': request.json.get('Stadium', "Unknown"),
 				'Attendance': request.json.get('Attendance', "10000"),
 				'Captain': request.json.get('Captain', "Player"),
-				'Dog_ID': request.json['Dog_ID']
+				'Doggy': request.json['Doggy']
 			}
 			football_teams.append(item)
 			return jsonify(item), 201
@@ -177,7 +177,7 @@ def change_team(team_id):
 @app.route('/football_teams/<team_id>/dog', methods=['PUT'])
 def change_info(team_id):
 	if(request.json ['name']):
-		req = requests.put('http://web2:81/dogs/'+football_teams[int(team_id)]["Dog_ID"], json = {"id": request.json.get('id', "1"), "name": request.json['name'],  "breed": request.json['breed'], "temporary guardian ID": request.json['temporary guardian ID']})
+		req = requests.put('http://web2:81/dogs/'+football_teams[int(team_id)]["Doggy"], json = {"id": request.json.get('id', "1"), "name": request.json['name'],  "breed": request.json['breed'], "temporary guardian ID": request.json['temporary guardian ID']})
 		req = json.loads(req.text)
 		return jsonify(req), 200
 	else:
@@ -207,7 +207,7 @@ def not_found(error):
 #	item = [item for item in football_teams if item['ID'] == team_id]
 #	if len(item) == 0:
 #       		abort(404)
-#	url = 'http://web2:81/dogs/'+item[0]['Dog_ID']
+#	url = 'http://web2:81/dogs/'+item[0]['Doggy']
 #   	req = requests.delete(url).text
 #	football_teams.remove(item[0])
 #	req = json.loads(req)
