@@ -1,14 +1,14 @@
 # Build
 
-docker-compose build
-docker-compose up -d
-docker-compose ps
+- docker-compose build
+- docker-compose up -d
+- docker-compose ps
 
 # 1-os užduoties užklausos
 
 ## GET - gauti informaciją apie visas komandas arba konkrečią komandą
-curl -i http://193.219.91.103:11361/football_teams
-curl -i http://193.219.91.103:11361/football_teams/1
+- curl -i http://193.219.91.103:11361/football_teams
+- curl -i http://193.219.91.103:11361/football_teams/1
 
 ## POST - sukurti nauja komanda
 curl -i -X POST -H  "Content-Type: application/json" -d '{"Name":"Roma"}' http://193.219.91.103:11361/football_teams 
@@ -22,8 +22,8 @@ curl -i -X DELETE http://193.219.91.103:11361/football_teams/1
 # 2-os uzduoties uzklausos
 
 ## GET - perziureti komandu suniukus arba vienos komandos suniuka
-curl -i http://193.219.91.103:11361/football_teams?embedded=dog
-curl -i http://193.219.91.103:11361/football_teams/1?embedded=dog
+- curl -i http://193.219.91.103:11361/football_teams?embedded=dog
+- curl -i http://193.219.91.103:11361/football_teams/1?embedded=dog
 
 ## POST - sukurti nauja komanda ir nauja suniuka
 curl -i -X POST -H "Content-Type: application/json" -d '{"Name":"Nurnberg, "Dog": {"breed":"spaniel", "name":"Firmino", "temporary guardian ID":"Geronimo"}}' http://193.219.91.103:11361/football_teams?embedded=dog
