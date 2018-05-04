@@ -29,6 +29,6 @@ curl -i http://193.219.91.103:11361/football_teams/1?embedded=dog
 curl -i -X POST -H "Content-Type: application/json" -d '{"Name":"Nurnberg, "Dog": {"breed":"spaniel", "name":"Firmino", "temporary guardian ID":"Geronimo"}}' http://193.219.91.103:11361/football_teams?embedded=dog
 
 ## PUT - pakeisti info apie šuniuką.
-curl -i -H "Content-Type: application/json" -X -PUT -d '{"name": "wilson", "breed": "captain",  "temporary guardian ID": "idaho"}' http://193.219.91.103:11361/football_teams/1/dogs
+curl -i -H "Content-Type: application/json" -X -PUT -d '{"name": "wilson", "breed": "captain",  "temporary guardian ID": "idaho"}' http://193.219.91.103:11361/football_teams/1/dog
 
 
