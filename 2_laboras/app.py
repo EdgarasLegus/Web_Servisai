@@ -100,9 +100,12 @@ def get_football_teams():
 def get_team(team_id):
 	if( request.args.get('embedded', '') == "dog"):
 		embTeams=copy.deepcopy(football_teams)
-		req = requests.get('http://web2:81/dogs/'+embTeams[int(team_id)]['Dog_ID'])
-		req = json.loads(req.text)
-		embTeams[int(team_id)]['Dog_ID'] = req
+		try:
+			req = requests.get('http://web2:81/dogs/'+embTeams[int(team_id)]['Dog_ID'])
+			req = json.loads(req.text)
+			embTeams[int(team_id)]['Dog_ID'] = req
+		except requests.exceptions.RequestException as e:
+			embTeams[int(team_id)]['Dog_ID'] = "null"
 		return jsonify(embTeams[int(team_id)]), 200
 	else:
   		team = [tm for tm in football_teams if (tm['ID'] == team_id) ]
