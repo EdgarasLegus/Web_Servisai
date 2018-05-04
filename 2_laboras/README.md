@@ -1,27 +1,31 @@
-#Build
+# Build
+
 docker-compose build
 docker-compose up -d
 docker-compose ps
 
-#########GET method for another web service
+# 1-os užduoties užklausos
 
-curl -i http://193.219.91.103:11361/dogs
+## GET - gauti informaciją apie visas komandas arba konkrečią komandą
+curl -i http://193.219.91.103:11361/football_teams
+curl -i http://193.219.91.103:11361/football_teams/1
 
-########GET method: dog for every team
+## POST - sukurti nauja komanda
+curl -i -X POST -H  "Content-Type: application/json" -d '{"Name":"Roma"}' http://193.219.91.103:11361/football_teams 
 
-curl -i http://193.219.91.103:11361/football_teams/id/dogs
+## PUT - pakeisti komandos atributus.
+curl -i -H "Content-Type: application/json" -X PUT -d '{"Name":"Fiorentina", "Country":"Italy", "Stadium":"Fialco", "Attendance":"18000", "Captain":"Giacomo Saviola" }' http://193.219.91.103:11361/football_teams/1  
 
-#######POST method: create new dog for the team
+## DELETE - istrinti komanda
+curl -i -X DELETE http://193.219.91.103:11361/football_teams/1
 
-in postman: Connection-Type: application/json
+# 2-os uzduoties uzklausos
 
-http://193.219.91.103:11361/football_teams/dogs
+## GET - perziureti komandu suniukus arba vienos komandos suniuka
+curl -i http://193.219.91.103:11361/football_teams?embedded=dog
+curl -i http://193.219.91.103:11361/football_teams/1?embedded=dog
 
-{
-    "Name": "Sevilla",
-    "Country": "Spain",
-    "breed": "Spanilel",
-    "Spot": "7",
-    "name": "Bruno",
-    "temporary guardian ID": "Michael"
-} 
+## POST - sukurti nauja komanda ir nauja suniuka
+curl -i -X POST -H "Content-Type: application/json" -d '{"Name":"Nurnberg, "Dog_ID": {"breed":"spaniel", "name":"Firmino", "temporary guardian ID":"Geronimo"}}' http://193.219.91.103:11361/football_teams?embedded=dog
+
+

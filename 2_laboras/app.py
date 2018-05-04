@@ -5,64 +5,65 @@ import os
 import re
 import json
 import requests
+import copy
 
 app = Flask(__name__)
 #redis = Redis(host='redis',port=6379)
 
 football_teams = [
   {
-    'ID': 1,
+    'ID': '1',
     'Name': 'FC Barcelona',
     'Country': 'Spain',
     'Stadium': 'Camp Nou',
     'Attendance': '99354',
     'Captain': 'Andres Iniesta',
-    'Spot': '1'
+    'Dog_ID': '1'
   },
   {
-    'ID': 2,
+    'ID': '2',
     'Name': 'Real Madrid CF',
     'Country': 'Spain',
     'Stadium': 'Estadio Santiago Bernabeu',
     'Attendance': '81044',
     'Captain': 'Sergio Ramos',
-    'Spot': '2'
+    'Dog_ID': '1'
   },
   {
-    'ID': 3,
+    'ID': '3',
     'Name': 'Club Atletico de Madrid',
     'Country': 'Spain',
     'Stadium': 'Wanda Metropolitano',
     'Attendance': '67703',
     'Captain': 'Gabi',
-    'Spot': '3'
+    'Dog_ID': '1'
   },
   {
-    'ID': 4,
+    'ID': '4',
     'Name': 'FC Bayern Muchen',
     'Country': 'Germany',
     'Stadium': 'Allianz Arena',
     'Attendance': '75000',
     'Captain': 'Manuel Neuer',
-    'Spot': '4'
+    'Dog_ID': '1'
   },
   {
-    'ID': 5,
+    'ID': '5',
     'Name': 'Juventus',
     'Country': 'Italy',
     'Stadium': 'Allianz Stadium',
     'Attendance': '41507',
     'Captain': 'Gianluigi Buffon',
-    'Spot': '5'
+    'Dog_ID': '1'
   },
   {
-    'ID':6,
+    'ID': '6',
     'Name': 'Roma',
     'Country': 'Italy',
     'Stadium': 'Stadio Olimpico',
     'Attendance': '51666',
     'Captain': 'Daniele De Rossi',
-    'Spot': '6'
+    'Dog_ID': '1'
   }
 ]
 
@@ -80,37 +81,73 @@ def get_football_teams():
 		for i in football_teams:
 			if( re.search(request.args.get('name', ''), i["Name"], re.IGNORECASE)):
 				findTeams.append(i)
-		return jsonify(findTeams)
+		return jsonify(findTeams), 200
+	elif( request.args.get('embedded', '') == "dog"):
+		embTeams=copy.deepcopy(football_teams)
+		for i in range(0, len(football_teams)):
+			try:
+				req = requests.get('http://web2:81/dogs/'+embTeams[int(i)]['Dog_ID'])
+				req = json.loads(req.text)
+				embTeams[int(i)]['Dog_ID'] = req
+			except requests.exceptions.RequestException as e:
+				embTeams[int(i)]['Dog_ID'] = "null"
+		return jsonify(embTeams), 200
 	else:
 		return jsonify(football_teams), 200
 
 # Get method to show team by id
-@app.route('/football_teams/<int:team_id>', methods=['GET'])
+@app.route('/football_teams/<team_id>', methods=['GET'])
 def get_team(team_id):
-  team = [tm for tm in football_teams if (tm['ID'] == team_id) ]
-  return jsonify(team)
+	if( request.args.get('embedded', '') == "dog"):
+		embTeams=copy.deepcopy(football_teams)
+		req = requests.get('http://web2:81/dogs/'+embTeams[int(team_id)]['Dog_ID'])
+		req = json.loads(req.text)
+		embTeams[int(team_id)]['Dog_ID'] = req
+		return jsonify(embTeams[int(team_id)]), 200
+	else:
+  		team = [tm for tm in football_teams if (tm['ID'] == team_id) ]
+  		return jsonify(team), 200
 
 # Create a new team
 @app.route('/football_teams', methods=['POST'])
 def create_team():
-	if not request.json or not 'Name' in request.json:
-	  abort(400)
-	item = {
-	  'ID': football_teams[-1]['ID'] + 1,
-	  'Name': request.json['Name'],
-	  'Country': request.json.get('Country', ""),
-	  'Stadium': request.json.get('Stadium', "Unknown"),
-	  'Attendance': request.json.get('Attendance', "10000"),
-	  'Captain': request.json.get('Captain', "Player"),
-	  'Spot': request.json['Spot']
-
-	}
-	football_teams.append(item)
-	return jsonify(item), 201, {'Location': '/football_teams/'+str(football_teams[-1]['ID'])}
+	if (request.args.get('embedded', '') == "dog"):
+		dog = request.json['Dog']
+		team_nr = len(football_teams)+1
+		req = requests.post('http://web2:81/dogs', json = {"breed": dog['breed'], "name": dog['name'], "temporary guardian ID": dog['temporary guardian ID']})
+		req = json.loads(req.text)
+		item = {
+	  		'ID': team_nr,
+	  		'Name': request.json['Name'],
+	  		'Country': request.json.get('Country', "Unknown"),
+	  		'Stadium': request.json.get('Stadium', "Unknown"),
+	  		'Attendance': request.json.get('Attendance', "10000"),
+	  		'Captain': request.json.get('Captain', "Player"),
+	  		'Dog_ID': req['id']
+		}
+		football_teams.append(item)
+		return jsonify(item), 201
+	else:
+		team_nr = len(football_teams)+1
+		req = requests.get('http://web2:81/dogs/'+request.json['Dog_ID'])
+		if not request.json or not 'Name' in request.json:
+			abort(404)
+		else:
+			item = {
+				'ID': team_nr,
+				'Name': request.json['Name'],
+				'Country': request.json.get('Country', "Unknown"),
+				'Stadium': request.json.get('Stadium', "Unknown"),
+				'Attendance': request.json.get('Attendance', "10000"),
+				'Captain': request.json.get('Captain', "Player"),
+				'Dog_ID': request.json['Dog_ID']
+			}
+			football_teams.append(item)
+			return jsonify(item), 201
 
 # Change team attributes
-@app.route('/football_teams/<int:team_id>', methods=['PUT'])
-def change_info(team_id):
+@app.route('/football_teams/<team_id>', methods=['PUT'])
+def change_team(team_id):
     item = [item for item in football_teams if item['ID'] == team_id]
     if len(item) == 0:
         abort(404)
@@ -133,12 +170,28 @@ def change_info(team_id):
     item[0]['Captain'] = request.json.get('Captain', item[0]['Captain'])
     return jsonify(item[0]), 200
 
+# Change team attributes
+@app.route('/football_teams/<team_id>/dog', methods=['PUT'])
+def change_info(team_id):
+	if(request.json ['name']):
+		req = requests.put('http://web2:81/dogs/'+football_teams[int(team_id)]["Dog_ID"], json = {"id": request.json.get('id', "1"), "name": request.json['name'],  "breed": request.json['breed'], "temporary guardian ID": request.json['temporary guardian ID']})
+		req = json.loads(req.text)
+		return jsonify(req), 200
+	else:
+		ch  = [team for team in football_teams if (team['ID'] == team_id)]
+		football_teams[int(team_id)]['Name'] = request.json['Name']
+		football_teams[int(team_id)]['Country'] = request.json['Country']
+		football_teams[int(team_id)]['Stadium'] = request.json['Stadium']
+		football_teams[int(team_id)]['Attendance'] = request.json['Attendance']
+		football_teams[int(team_id)]['Captain'] = request.json['Captain']
+		return jsonify(football_teams[int(team_id)]), 200
+
 # Delete teams
-@app.route('/football_teams/<int:team_id>', methods=['DELETE'])
+@app.route('/football_teams/<team_id>', methods=['DELETE'])
 def delete_team(team_id):
   item = [item for item in football_teams if item['ID'] == team_id]
   if len(item) == 0:
-    abort(404)
+  	abort(404)
   football_teams.remove(item[0])
   return jsonify(True), 200
 
@@ -146,85 +199,16 @@ def delete_team(team_id):
 def not_found(error):
 	return make_response(jsonify({'error': 'Not Found'}), 404)
 
-####################SECOND TASK##################################
-
-#Access info about dogs
-@app.route('/dogs', methods=['GET'])
-def get_dogs():
-	req = requests.get('http://web2:81/dogs')
-	data = req.json()
-	return jsonify(data)
-
-#Get dogs for each team
-@app.route('/football_teams/<int:team_id>/dogs', methods=['GET'])
-def get_dog_for_team(team_id):
-	fteam = [tm for tm in football_teams if (tm['ID'] == team_id)]
-	if len(fteam) == 0:
-		abort(404)
-	link = 'http://web2:81/dogs'
-	req = requests.get('{}/{}'.format(link, fteam[0]['ID']))
-	data = req.json()
-	if req.status_code == 200:
-		fteam[0]['dog'] = []
-		fteam[0]['dog'].append(data)
-		return jsonify(fteam[0])
-	return jsonify(data)
-
-#Create new dog for the team
-@app.route('/football_teams/dogs', methods=['POST'])
-def create_dog():
-	link = 'http://web2:81/dogs'
-	new_doggy = {
-			'breed': request.json['breed'],
-			'name': request.json['name'],
-			'temporary guardian ID': request.json['temporary guardian ID']
-	}
-	req = requests.post(link, json=new_doggy)
-	req = json.loads(req.text)
-	new_team = {
-			'ID': football_teams[-1]['ID'] + 1,
-			'Name': request.json['Name'],
-			'Country': request.json['Country'],
-			'Stadium': request.json.get('Stadium', 'Unknown'),
-			'Attendance': request.json.get('Attendance', '10000'),
-			'Captain': request.json.get('Captain', 'Best player'),
-			'Spot' : request.json['Spot']
-	}
-	football_teams.append(new_team)
-	return jsonify(new_team), 201
-
-#Change info about dog
-#@app.route('/football_teams/<int:team_id>/dogs', methods=['PUT'])
-#def change_dog(team_id):
-#	fteam = [tm for tm in football_teams if (tm['ID'] == team_id)]
-#	if len(fteam) == 0:
-#		abort(404)
-#	link = 'http://web2:81/dogs'
-#	change_doggy = {
-#		'breed': request.json['breed'],
-#		'id': request.json.get('id' , 'unknown'),
-#		'name': request.json['name'],
-#		'temporary guardian ID': request.json.get('temporary guardian ID', "Michael")
-#	}
-#
-#	req = requests.put(link, json=change_doggy)
-#	req = req.text
+#@app.route('/football_teams/<team_id>/dog', methods=['DELETE'])
+#def delete_dog(team_id):
+#	item = [item for item in football_teams if item['ID'] == team_id]
+#	if len(item) == 0:
+#       		abort(404)
+#	url = 'http://web2:81/dogs/'+item[0]['Dog_ID']
+#   	req = requests.delete(url).text
+#	football_teams.remove(item[0])
 #	req = json.loads(req)
-#	return jsonify(req), 200
-
-# Delete dog
-#@app.route('/football_teams/<int:team_id>/dogs/<dog_id>', methods=['DELETE'])
-#def delete_dog(team_id, dog_id):
-#	tam = [ tm for tm in football_teams if (tm['ID'] == team_id)]
-#	if len(tam) == 0 or len(tam[0]['dogs']) == 0:
-#		abort(404)
-#	link = 'http://web2:81/dogs'
-#	for i in range(len(tam[0]['dogs'])):
-#		if tam[0]['dogs'][i] == dog_id:
-#			req = requests.delete('{}/{}'.format(link, dog_id))
-#			tam[0]['dogs'].remove(tam[0]['dogs'][i])
-#			return jsonify(True), 200
-#	return jsonify(False), 404
+#	return jsonify(team_id), 200
 
 if __name__== "__main__":
 	app.run(host="0.0.0.0",debug=True, port=5000)
